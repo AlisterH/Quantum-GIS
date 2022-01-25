@@ -439,7 +439,7 @@ class QgsWmsProvider final: public QgsRasterDataProvider
     QUrl createRequestUrlWMS( const QgsRectangle &viewExtent, int pixelWidth, int pixelHeight );
     void createTileRequestsWMSC( const QgsWmtsTileMatrix *tm, const QgsWmsProvider::TilePositions &tiles, QgsWmsProvider::TileRequests &requests );
     void createTileRequestsWMTS( const QgsWmtsTileMatrix *tm, const QgsWmsProvider::TilePositions &tiles, QgsWmsProvider::TileRequests &requests );
-    void createTileRequestsXYZ( const QgsWmtsTileMatrix *tm, const QgsWmsProvider::TilePositions &tiles, QgsWmsProvider::TileRequests &requests );
+    void createTileRequestsXYZ( const QgsWmtsTileMatrix *tm, const QgsWmsProvider::TilePositions &tiles, QgsWmsProvider::TileRequests &requests, QgsRasterBlockFeedback *feedback = nullptr );
 
     /**
       * Add WMS-T parameters to the \a query, if provider has temporal properties
@@ -457,7 +457,7 @@ class QgsWmsProvider final: public QgsRasterDataProvider
       bool smooth; //!< Whether to use antialiasing/smooth transforms when rendering tile
     } TileImage;
     //! Gets tiles from a different resolution to cover the missing areas
-    void fetchOtherResTiles( QgsTileMode tileMode, const QgsRectangle &viewExtent, int imageWidth, QList<QRectF> &missing, double tres, int resOffset, QList<TileImage> &otherResTiles );
+    void fetchOtherResTiles( QgsTileMode tileMode, const QgsRectangle &viewExtent, int imageWidth, QList<QRectF> &missing, double tres, int resOffset, QList<TileImage> &otherResTiles, QgsRasterBlockFeedback *feedback = nullptr );
 
     /**
      * Returns the full url to request legend graphic
@@ -634,6 +634,8 @@ class QgsWmsTiledImageDownloadHandler : public QObject
 
     void downloadBlocking();
 
+    QString error() const;
+
   protected slots:
     void tileReplyFinished();
     void canceled();
@@ -652,7 +654,7 @@ class QgsWmsTiledImageDownloadHandler : public QObject
     void finish() { QMetaObject::invokeMethod( mEventLoop, "quit", Qt::QueuedConnection ); }
 
     QString mProviderUri;
-
+    QString mBaseUrl;
     QgsWmsAuthorization mAuth;
 
     QImage *mImage = nullptr;
@@ -667,6 +669,8 @@ class QgsWmsTiledImageDownloadHandler : public QObject
     QList<QNetworkReply *> mReplies;
 
     QgsRasterBlockFeedback *mFeedback = nullptr;
+
+    QString mError;
 };
 
 
